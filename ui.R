@@ -11,12 +11,12 @@ shinyUI(fluidPage(
   sidebarLayout(
     sidebarPanel(
       radioButtons("rbChoices", "color", choices = c("red", "blue")),
-      checkboxInput("ciKeep", "Keep names ?")
+      textOutput("rvcars")
     ),
 
     mainPanel(
       plotOutput("distPlot"),
-      uiOutput("cgiCarNames")
+      checkboxGroupInput("cgiNames", "Car names", choices = "")
     )
   )
 ))

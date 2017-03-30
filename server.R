@@ -11,10 +11,34 @@ library(dplyr)
 
 shinyServer(function(input, output, session) {
   
-  rv_cars <- reactiveVal()
+  selected_cars <- reactiveVal()
   
-  observeEvent(input$cgi_car_names, {
-    rv_cars(input$cgi_car_names)
+  observeEvent(input$cgiNames, {
+    cat("###################", "Event", "###################\n", sep = '\n')
+    
+    available <- cars()$nm
+    old_selection  <- selected_cars()
+    new_selection <- input$cgiNames
+    
+    to_keep <- setdiff(old_selection, available)
+    new_rv <- c(new_selection, to_keep)
+    
+    
+    cat('available: ', toString(available), '\n')
+    cat('old_selection: ', toString(old_selection), '\n')
+    cat('new_selection: ', toString(new_selection), '\n')
+    cat('to_keep: ', toString(to_keep), '\n')
+    cat('new_rv: ', toString(new_rv), '\n\n\n')
+    
+    selected_cars(new_rv)
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
+  
+  observe({
+    cat("observe\n")
+    x <- cars()$nm
+    y <- selected_cars()[selected_cars() %in% x]
+    print(y)
+    updateCheckboxGroupInput(session, "cgiNames", choices = x, selected = y)
   })
   
   cars <- reactive({
@@ -25,25 +49,10 @@ shinyServer(function(input, output, session) {
       dplyr::filter(mpg > filt)
   })
   
-  car_names <- reactive({
-    cars()$nm
-  })
-
   output$distPlot <- renderPlot({
-    
-    filtered <- cars()
-    ggplot(filtered, aes(cyl, qsec)) + 
+    ggplot(cars(), aes(cyl, qsec)) + 
       geom_col(fill = input$rbChoices)
+  })
 
-  })
-  
-  output$cgiCarNames <- renderUI({
-    choices <- car_names()
-    selected <- if (length(rv_cars()) == 0) NULL else {
-      rv_cars()
-    }
-    
-    checkboxGroupInput("cgi_car_names", label = "Car names", choices = choices, selected = selected)
-  })
 
 })
