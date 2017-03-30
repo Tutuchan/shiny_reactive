@@ -11,13 +11,13 @@ library(dplyr)
 
 shinyServer(function(input, output, session) {
   
-  selected_cars <- reactiveVal()
+  values <- reactiveValues(selected_cars = character(0))
   
   observeEvent(input$cgiNames, {
     cat("###################", "Event", "###################\n", sep = '\n')
     
     available <- cars()$nm
-    old_selection  <- selected_cars()
+    old_selection  <- values$selected_cars
     new_selection <- input$cgiNames
     
     to_keep <- setdiff(old_selection, available)
@@ -30,13 +30,13 @@ shinyServer(function(input, output, session) {
     cat('to_keep: ', toString(to_keep), '\n')
     cat('new_rv: ', toString(new_rv), '\n\n\n')
     
-    selected_cars(new_rv)
+    values$selected_cars <- new_rv
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
   
   observe({
     cat("observe\n")
     x <- cars()$nm
-    y <- selected_cars()[selected_cars() %in% x]
+    y <- values$selected_cars[values$selected_cars %in% x]
     print(y)
     updateCheckboxGroupInput(session, "cgiNames", choices = x, selected = y)
   })
